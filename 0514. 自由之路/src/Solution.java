@@ -1,34 +1,44 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author 废柴 2020/11/11 19:41
  */
 public class Solution {
     public int findRotateSteps(String ring, String key) {
-        int[] result = {Integer.MAX_VALUE};
-        Map<Character, List<Integer>> cache = new HashMap<>();
+        List<Integer>[] cache = new ArrayList[]{
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>()
+        };
         char[] r = ring.toCharArray(), k = key.toCharArray();
         for (int i = 0; i < r.length; i++)
-            cache.compute(r[i], (e, o) -> o == null ? new ArrayList<>() : o).add(i);
+            cache[r[i] - 'a'].add(i);
 
-        Map<Integer, Integer> map = new HashMap<>();
-        for (int i : cache.get(k[0])) {
-            map.put(i, distance(0, i, r.length) + 1);
+        int[][] map = new int[k.length][r.length];
+        for (int i : cache[k[0] - 'a']) {
+            map[0][i] = distance(0, i, r.length) + 1;
         }
         for (int i = 1; i < k.length; i++) {
-            Map<Integer, Integer> nextMap = new HashMap<>();
-            List<Integer> idxs = cache.get(k[i]);
-            map.forEach((idx, cnt) -> {
-                for (int e : idxs)
-                    nextMap.merge(e, cnt + 1 + distance(idx, e, r.length), Math::min);
-            });
-            map = nextMap;
+            List<Integer> es = cache[k[i] - 'a'];
+            for (int e : es) {
+                map[i][e] = Integer.MAX_VALUE;
+                for (int j = 0; j < r.length; j++) {
+                    if (map[i - 1][j] != 0) {
+                        map[i][e] = Math.min(map[i][e], 1 + distance(j, e, r.length) + map[i - 1][j]);
+                    }
+                }
+            }
+
         }
-        map.forEach((e, c) -> result[0] = Math.min(result[0], c));
-        return result[0];
+        int result = Integer.MAX_VALUE;
+        for (int i : map[k.length - 1]) {
+            result = i == 0 ? result : Math.min(result, i);
+        }
+        return result;
     }
 
     private int distance(int i, int kidx, int length) {
