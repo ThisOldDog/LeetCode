@@ -22,6 +22,7 @@ target/
 *.diff
 *.patch
 *.tmp
+*.class
 
 # Package Files #
 *.jar
